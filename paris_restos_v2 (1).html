@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma Carte Restos · Paris</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+  --bg: #f5f0e8;
+  --bg2: #faf7f2;
+  --bg3: #ede8df;
+  --border: #d8d0c0;
+  --border2: #c8bfad;
+  --text: #2a2218;
+  --text2: #6b5e4a;
+  --text3: #9e8f7a;
+  --red: #c0392b;
+  --red-bg: #fdf0ee;
+  --gold: #b8860b;
+  --gold-bg: #fdf8ee;
+  --green: #2e6b45;
+  --green-bg: #eef6f1;
+  --blue: #1a5276;
+  --blue-bg: #eef3f8;
+  --shadow: 0 2px 12px rgba(60,40,10,0.08);
+  --shadow-lg: 0 8px 32px rgba(60,40,10,0.14);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+  gap: 14px;
+  box-shadow: var(--shadow);
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.logo h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.logo h1 em { font-style: italic; color: var(--red); }
+
+.badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.badge b { color: var(--red); }
+
+.search-wrap {
+  flex: 1;
+  max-width: 320px;
+  position: relative;
+}
+
+.search-wrap input {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 7px 12px 7px 32px;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-wrap input::placeholder { color: var(--text3); }
+.search-wrap input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(192,57,43,0.1); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 0.85rem; pointer-events: none; }
+
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn { 
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-primary { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-primary:hover { background: #a93226; border-color: #a93226; }
+.btn-secondary { background: transparent; border-color: var(--border2); color: var(--text2); }
+.btn-secondary:hover { border-color: var(--text2); color: var(--text); background: var(--bg3); }
+
+.geocoding-status {
+  font-size: 0.65rem;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.geocoding-status.active { color: var(--gold); }
+.dot-pulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+/* ── LAYOUT ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.filter-title {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 7px;
+}
+
+/* Arrondissement */
+.arr-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 3px; }
+.arr-btn {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 5px 2px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.arr-btn:hover { border-color: var(--red); color: var(--red); }
+.arr-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Tags */
+.tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+  font-size: 0.62rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.tag:hover { border-color: var(--red); color: var(--red); }
+.tag.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Price */
+.price-row { display: flex; gap: 4px; }
+.price-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  padding: 5px 4px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+}
+.price-btn:hover { border-color: var(--gold); color: var(--gold); }
+.price-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* Feature toggles */
+.features-wrap { display: flex; flex-direction: column; gap: 3px; }
+.feature-toggle {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background 0.12s;
+}
+.feature-toggle:hover { background: var(--bg3); }
+.feature-toggle input { display: none; }
+.toggle-pill {
+  width: 28px; height: 15px; border-radius: 8px;
+  background: var(--border2); position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-pill::after {
+  content: ''; position: absolute;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: #fff; top: 2px; left: 2px; transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.feature-toggle input:checked + .toggle-pill { background: var(--red); }
+.feature-toggle input:checked + .toggle-pill::after { left: 15px; }
+.feature-label { font-size: 0.72rem; color: var(--text2); transition: color 0.12s; }
+.feature-toggle input:checked ~ .feature-label { color: var(--text); font-weight: 500; }
+
+/* Reset */
+.reset-btn {
+  width: 100%; background: transparent; border: 1.5px solid var(--border2);
+  color: var(--text3); font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 8px; border-radius: 7px;
+  cursor: pointer; transition: all 0.15s;
+}
+.reset-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+/* ── RIGHT PANEL ── */
+.right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── MAP ── */
+#map { height: 50%; flex-shrink: 0; border-bottom: 2px solid var(--border); }
+
+.leaflet-container { background: #e8e0d0 !important; }
+.leaflet-control-zoom { border: 1px solid var(--border) !important; border-radius: 7px !important; overflow: hidden; }
+.leaflet-control-zoom a { background: var(--bg2) !important; color: var(--text2) !important; border-color: var(--border) !important; width: 26px !important; height: 26px !important; line-height: 26px !important; }
+.leaflet-control-zoom a:hover { background: var(--bg3) !important; color: var(--text) !important; }
+
+.custom-marker {
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.custom-marker:hover { transform: scale(1.4); }
+.custom-marker.highlighted { transform: scale(2.2); z-index: 9999 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+.type-restaurant { background: #c0392b; }
+.type-tapas { background: #27ae60; }
+.type-brunch { background: #e67e22; }
+.type-bar { background: #8e44ad; }
+.type-boite { background: #2980b9; }
+.type-unknown { background: #7f8c8d; }
+
+.leaflet-popup-content-wrapper {
+  background: var(--bg2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content { margin: 0 !important; padding: 14px 16px !important; min-width: 210px !important; }
+.leaflet-popup-tip-container { display: none; }
+.leaflet-popup-close-button { color: var(--text3) !important; top: 8px !important; right: 10px !important; font-size: 16px !important; }
+.popup-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.popup-sub { font-size: 0.64rem; color: var(--text2); margin-bottom: 6px; }
+.popup-addr { font-size: 0.6rem; color: var(--text3); margin-bottom: 6px; }
+.popup-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.popup-comment { font-size: 0.65rem; font-style: italic; color: var(--text2); margin: 5px 0; font-family: 'Playfair Display', serif; }
+.popup-edit-btn {
+  margin-top: 8px; width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text2); font-size: 0.65rem; font-weight: 600; padding: 5px;
+  border-radius: 5px; cursor: pointer; transition: all 0.12s; font-family: 'DM Sans', sans-serif;
+}
+.popup-edit-btn:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+/* ── RESULTS BAR ── */
+.results-bar {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; background: var(--bg2);
+}
+.results-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+.results-label b { color: var(--red); }
+.sort-select {
+  background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--text2); font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem; padding: 4px 8px; border-radius: 5px; outline: none; cursor: pointer;
+}
+
+/* ── CARDS ── */
+.cards-container {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px; align-content: start;
+}
+.cards-container::-webkit-scrollbar { width: 4px; }
+.cards-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.card {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+}
+.card:hover {
+  border-color: var(--red);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.card-actions {
+  position: absolute; top: 8px; right: 8px;
+  display: none; gap: 4px;
+}
+.card:hover .card-actions { display: flex; }
+.card-action-btn {
+  width: 22px; height: 22px; border-radius: 4px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text3); font-size: 0.7rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.1s;
+}
+.card-action-btn.edit:hover { background: var(--gold-bg); border-color: var(--gold); color: var(--gold); }
+.card-action-btn.delete:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem; font-weight: 600; color: var(--text);
+  line-height: 1.2; margin-bottom: 4px;
+  padding-right: 44px;
+}
+.card-meta { font-size: 0.6rem; color: var(--text3); margin-bottom: 5px; display: flex; align-items: center; gap: 4px; }
+.card-arr {
+  display: inline-block; font-size: 0.57rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text3);
+}
+.card-price { font-family: 'Playfair Display', serif; font-size: 0.75rem; color: var(--gold); font-weight: 600; }
+.card-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+.chip {
+  font-size: 0.55rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 2px 5px; border-radius: 3px;
+}
+.chip-green { background: var(--green-bg); color: var(--green); border: 1px solid #b8dcc9; }
+.chip-gold { background: var(--gold-bg); color: var(--gold); border: 1px solid #e8d59e; }
+.chip-red { background: var(--red-bg); color: var(--red); border: 1px solid #f0c0ba; }
+.chip-blue { background: var(--blue-bg); color: var(--blue); border: 1px solid #bcd0e8; }
+.chip-gray { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+.card-comment { margin-top: 5px; font-size: 0.62rem; font-style: italic; color: var(--text3); font-family: 'Playfair Display', serif; }
+
+.no-results { grid-column: 1/-1; text-align: center; padding: 50px 20px; }
+.no-results .emoji { font-size: 2rem; margin-bottom: 10px; }
+.no-results p { color: var(--text3); font-size: 0.8rem; margin-top: 4px; }
+
+/* LEGEND */
+.legend-strip {
+  position: absolute; bottom: 10px; left: 10px; z-index: 1000;
+  background: rgba(250,247,242,0.92); backdrop-filter: blur(4px);
+  border: 1px solid var(--border); border-radius: 7px;
+  padding: 6px 10px; display: flex; gap: 10px; align-items: center;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.58rem; color: var(--text2); font-weight: 500; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.6); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(42,34,24,0.45); backdrop-filter: blur(3px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  width: 520px; max-width: 95vw;
+  box-shadow: var(--shadow-lg);
+  max-height: 88vh; overflow-y: auto;
+}
+.modal-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 600; color: var(--text); }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text3); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.modal-close:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+.modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1/-1; }
+.form-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+.form-input, .form-select, .form-textarea {
+  background: var(--bg); border: 1.5px solid var(--border);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; padding: 8px 10px; border-radius: 7px;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--red); box-shadow: 0 0 0 3px rgba(192,57,43,0.08);
+}
+.form-textarea { resize: vertical; min-height: 60px; }
+.form-checkboxes { display: flex; flex-wrap: wrap; gap: 6px; }
+.form-checkbox-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.7rem; color: var(--text2); cursor: pointer;
+  background: var(--bg3); border: 1.5px solid var(--border);
+  padding: 4px 9px; border-radius: 14px; transition: all 0.12s;
+}
+.form-checkbox-label input { display: none; }
+.form-checkbox-label.checked { background: var(--red-bg); border-color: var(--red); color: var(--red); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <h1>Ma Carte <em>Paris</em></h1>
+    <div class="badge"><b id="shown-count">275</b> / <span id="total-count">275</span></div>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search-input" placeholder="Rechercher par nom, cuisine, adresse…">
+  </div>
+  <div class="header-actions">
+    <span class="geocoding-status" id="geocoding-status" style="display:none">
+      <span class="dot-pulse"></span>
+      <span id="geocoding-text">Géocodage…</span>
+    </span>
+    <button class="btn btn-primary" onclick="openModal(null)">＋ Ajouter</button>
+    <button class="btn btn-secondary" onclick="exportData()">↓ Export</button>
+    <button class="btn btn-secondary" id="import-btn" onclick="document.getElementById('import-file').click()">↑ Import</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</header>
+
+<div class="main">
+  <aside class="sidebar">
+
+    <div>
+      <div class="filter-title">Arrondissement</div>
+      <div class="arr-grid" id="arr-grid"></div>
+    </div>
+
+    <div>
+      <div class="filter-title">Cuisine</div>
+      <div class="tags-wrap" id="cuisine-tags"></div>
+    </div>
+
+    <div>
+      <div class="filter-title">Type</div>
+      <div class="tags-wrap" id="type-tags"></div>
+    </div>
+
+    <div>
+      <div class="filter-title">Prix</div>
+      <div class="price-row" id="price-row"></div>
+    </div>
+
+    <div>
+      <div class="filter-title">Ambiance & options</div>
+      <div class="features-wrap" id="feature-toggles"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetFilters()">↺ Réinitialiser les filtres</button>
+
+  </aside>
+
+  <div class="right-panel">
+    <div id="map" style="position:relative">
+      <div class="legend-strip">
+        <div class="legend-item"><div class="legend-dot" style="background:#c0392b"></div>Restaurant</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#27ae60"></div>Bar à vin</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>Brunch</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8e44ad"></div>Bar</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2980b9"></div>Boîte</div>
+      </div>
+    </div>
+
+    <div class="results-bar">
+      <div class="results-label"><b id="card-count">275</b> résultats</div>
+      <select class="sort-select" id="sort-select" onchange="renderCards()">
+        <option value="default">Ordre par défaut</option>
+        <option value="name">Nom A→Z</option>
+        <option value="price-asc">Prix croissant</option>
+        <option value="price-desc">Prix décroissant</option>
+        <option value="arr">Arrondissement</option>
+      </select>
+    </div>
+
+    <div class="cards-container" id="cards-container"></div>
+  </div>
+</div>
+
+<!-- MODAL ADD/EDIT -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Ajouter un restaurant</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-idx" value="">
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Nom *</label>
+          <input class="form-input" id="f-name" type="text" placeholder="Nom du restaurant">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="f-type">
+            <option>Restaurant</option>
+            <option>Bar à vin / Tapas</option>
+            <option>Brunch</option>
+            <option>Bar</option>
+            <option>Boite</option>
+            <option>Bar à vin / Tapas, Restaurant</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cuisine</label>
+          <input class="form-input" id="f-cuisine" type="text" placeholder="Français, Japonais…" list="cuisine-datalist">
+          <datalist id="cuisine-datalist"></datalist>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prix</label>
+          <select class="form-select" id="f-price">
+            <option>€</option>
+            <option>€€</option>
+            <option selected>€€€</option>
+            <option>€€€€</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Arrondissement</label>
+          <select class="form-select" id="f-arr">
+            <option value="75001">1er</option>
+            <option value="75002">2e</option>
+            <option value="75003">3e</option>
+            <option value="75004">4e</option>
+            <option value="75005">5e</option>
+            <option value="75006">6e</option>
+            <option value="75007">7e</option>
+            <option value="75008">8e</option>
+            <option value="75009">9e</option>
+            <option value="75010">10e</option>
+            <option value="75011">11e</option>
+            <option value="75012">12e</option>
+            <option value="75013">13e</option>
+            <option value="75014">14e</option>
+            <option value="75015">15e</option>
+            <option value="75016">16e</option>
+            <option value="75017">17e</option>
+            <option value="75018">18e</option>
+            <option value="75019">19e</option>
+            <option value="75020">20e</option>
+            <option value="75116">16e bis</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Adresse</label>
+        <input class="form-input" id="f-location" type="text" placeholder="5 Rue de la Paix, 75001 Paris">
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Commentaire</label>
+        <textarea class="form-textarea" id="f-comments" placeholder="Notes perso…"></textarea>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">Caractéristiques</label>
+        <div class="form-checkboxes" id="f-features"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveRestaurant()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA — Données initiales + localStorage pour les modifications
+// ─────────────────────────────────────────────────────────────────────────────
+const INITIAL_DATA = [{"Name":"Anahi","Type":"Restaurant","Cuisine Type":"Argentin","Price":"€€€","Comments":"Pas mal d'ambiance en weekend","Arrondissement":75003,"Location":"49 Rue Volta, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"les œillets paris","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75011,"Location":"137 Rue Saint-Maur, 75011 Paris","Sans reservation":true,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Majouja paris","Type":"Restaurant","Cuisine Type":"Algérien","Price":"€","Comments":"","Arrondissement":75009,"Location":"43 Rue Laffitte, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Alfred paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75001,"Location":"8 Rue du Mont Thabor, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Selva paris","Type":"Restaurant","Cuisine Type":"Peruvien","Price":"€€","Comments":"","Arrondissement":75005,"Location":"22 Rue du Sommerard, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Jugaad","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75002,"Location":"16 Rue Favart, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Gros bao Paris","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75010,"Location":"72 Quai de Jemmapes, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Petit bao Ternes","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75008,"Location":"266 Rue du Faubourg Saint-Honoré, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Petit bao Etienne Marcel","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75002,"Location":"116 Rue St Denis, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Petit bao Bastille","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75011,"Location":"10 R. Bréguet, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Bleu Bao","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75009,"Location":"8 Rue Saint-Lazare, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kozy notre dame","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75005,"Location":"6 Rue du Petit Pont, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Tigermilk Sentier - Paris 2","Type":"Restaurant","Cuisine Type":"Amerique du sud","Price":"€€","Comments":"","Arrondissement":75002,"Location":"77 Rue d'Aboukir, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Bon vivant","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75005,"Location":"7 Rue des Écoles, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pantobaguette","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75018,"Location":"16 Rue Eugène Sue, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Freddy's","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"54 Rue de Seine, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le singe à paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75012,"Location":"40 Rue Traversière, 75012 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Lolo cave à manger","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"12 Rue de Châteaudun, 75009 Paris","Sans reservation":true,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Foujita paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75001,"Location":"41 Rue Saint-Roch, 75001 Paris","Sans reservation":true,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mehmet Paris","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"Turque","Price":"€€","Comments":"","Arrondissement":75018,"Location":"43 Rue Ramey, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Maggie Pigalle","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"55 Blvd Marguerite de Rochechouart, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Restaurant hotel Bachaumont","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"18 Rue Bachaumont, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"adraba Paris","Type":"Restaurant","Cuisine Type":"Middle east","Price":"€€","Comments":"","Arrondissement":75018,"Location":"40 Rue Véron, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Au Petit Riche","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75009,"Location":"25 Rue Le Peletier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Gallopin","Type":"Restaurant","Cuisine Type":"International","Price":"€€€€","Comments":"","Arrondissement":75002,"Location":"40 Rue Notre Dame des Victoires, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":true,"Gastro":false},{"Name":"Presto fresco","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75001,"Location":"14 Rue Montmartre, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"bouche bouche bouche","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"85 Rue Jean-Pierre Timbaud, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Brasserie Rosie Lou","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75002,"Location":"31 Bd de Bonne Nouvelle, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Jun Paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75006,"Location":"1 Rue de Condé, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Akabeko","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€€","Comments":"","Arrondissement":75007,"Location":"40 Rue de l'Université, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":true},{"Name":"Le chardonnay","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75002,"Location":"3 Rue Bachaumont, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Nelson's","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75001,"Location":"16 Rue Coquillière, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Fabula","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75004,"Location":"16 Rue des Francs Bourgeois, 75004 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Steam bar","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75006,"Location":"2 Rue du Sabot, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Racine panoramas","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75002,"Location":"8 Pass. des Panoramas, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kuma paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75009,"Location":"8 Rue Cadet, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kubri paris","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€€","Comments":"","Arrondissement":75011,"Location":"108 Rue Amelot, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sugo pasta fresca","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75002,"Location":"16 Rue Saint-Augustin, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Raffiné paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75001,"Location":"194B Rue de Rivoli, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Jinchan shokudo","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75012,"Location":"154 Rue du Faubourg Saint-Antoine, 75012 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Brigade du tigre","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75010,"Location":"38 Rue du Faubourg Poissonnière, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La plume","Type":"Restaurant","Cuisine Type":"International","Price":"€€€€","Comments":"","Arrondissement":75001,"Location":"43 Rue Étienne Marcel, 75001 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":true,"Gastro":false},{"Name":"Kozy Boquet","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75007,"Location":"79 Av. Bosquet, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Abri soba","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75009,"Location":"10 Rue Saulnier, 75009 Paris","Sans reservation":true,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cantina Cortado","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75003,"Location":"24 Rue Charlot, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La fontaine de mars","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75007,"Location":"129 Rue Saint-Dominique, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La laiterie sainte Clotilde","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75007,"Location":"64 Rue de Bellechasse, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Clamato","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75011,"Location":"80 Rue de Charonne, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le bon saint pourcain","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75006,"Location":"10bis Rue Servandoni, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Eunoe","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75011,"Location":"6 Rue Rochebrune, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Zakuro","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75002,"Location":"4 Rue de Port-Mahon, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Il Ladro di fichi","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75003,"Location":"34 Rue du Grenier-Saint-Lazare, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sourire galande","Type":"Bar à vin / Tapas","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75005,"Location":"27 Rue Galande, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Bistrot des lettres","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75005,"Location":"52 Bd Saint-Germain, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cherche minuit","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75006,"Location":"86 Rue du Cherche-Midi, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cave de saint Gilles","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75003,"Location":"4 Rue Saint-Gilles, 75003 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Vaisseau","Type":"Restaurant","Cuisine Type":"International","Price":"€€€€","Comments":"","Arrondissement":75011,"Location":"35 Rue Faidherbe, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":true},{"Name":"Mashita","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€€","Comments":"","Arrondissement":75014,"Location":"9 Rue Poirier de Narçay, 75014 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Casa Di Peppe","Type":"Restaurant","Cuisine Type":"Italien","Price":"€","Comments":"","Arrondissement":75005,"Location":"222 Rue Saint-Jacques, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Osteria Brutto","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75005,"Location":"15 Rue Gracieuse, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Ramen wang","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75014,"Location":"20 Rue des Plantes, 75014 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"ciasa mia paris","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€€€","Comments":"","Arrondissement":75005,"Location":"19 Rue Laplace, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":true},{"Name":"La gentiane","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75006,"Location":"4 Rue Stanislas, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Terronia","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75005,"Location":"11 Rue des Boulangers, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Jip Paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75011,"Location":"112 Rue de la Roquette, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kitchen ter","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75005,"Location":"26 Bd Saint-Germain, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"valdico paris","Type":"Bar à vin / Tapas","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75006,"Location":"23 Rue de l'Abbé Grégoire, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La cote ou la cuisse","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75005,"Location":"8 Rue Tournefort, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Valdico","Type":"Bar à vin / Tapas","Cuisine Type":"Italien","Price":"€","Comments":"","Arrondissement":75006,"Location":"23 Rue de l'Abbé Grégoire, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Rivera fuga","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75007,"Location":"10 Port des Invalides, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Handohandroll","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75006,"Location":"89 Rue de Sèvres, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le lava","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75005,"Location":"9 Rue de la Montagne Ste Geneviève, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sushi b","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€€","Comments":"","Arrondissement":75002,"Location":"5 Rue Rameau, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Grand café d'Athènes","Type":"Restaurant","Cuisine Type":"Grec","Price":"€€","Comments":"","Arrondissement":75010,"Location":"74 Rue du Faubourg Saint-Denis, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez marcel","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75006,"Location":"7 Rue Stanislas, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kamo paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75010,"Location":"17 Rue Martel, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Tempête paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75010,"Location":"5 Cr des Petites Écuries, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Delhi bazar","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"71 Rue Servan, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La grande crémerie","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"8 Rue Grégoire de Tours, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Tsuzuki","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75006,"Location":"2 Bis Rue des Ciseaux, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mezzeterie","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"Libanais","Price":"€€","Comments":"","Arrondissement":75002,"Location":"2 Rue des Petits Carreaux, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Via del campo","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75007,"Location":"22 Rue du Champ de Mars, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Em sherif","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€€€","Comments":"","Arrondissement":75008,"Location":"134 Bd Haussmann, 75008 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le comptoir de l'artoise","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75008,"Location":"5 Rue d'Artois Gauche, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Colère Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"39 Rue Richer, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":true},{"Name":"Super sonic","Type":"Boite","Cuisine Type":"N.A","Price":"€","Comments":"","Arrondissement":75012,"Location":"9 Rue Biscornet, 75012 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Villa M","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75015,"Location":"24-30 Bd Pasteur, 75015 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Rooftop national","Type":"Bar","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75003,"Location":"243 Rue Saint-Martin, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Rooftop Bar Dame des Arts","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"4 Rue Danton, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Terrasse hôtel","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75018,"Location":"12-14 Rue Joseph de Maistre, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Pilgrim","Type":"Bar","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75005,"Location":"11 Rue de Poissy, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Eldorado Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75017,"Location":"18 Rue des Dames, 75017 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La Belleviloise","Type":"Bar","Cuisine Type":"N.A","Price":"€","Comments":"","Arrondissement":75020,"Location":"19-21 Rue Boyer, 75020 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":true,"Festif":false,"Gastro":false},{"Name":"Kiyoaji","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75018,"Location":"15 Rue Caulaincourt, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cornichon","Type":"Bar à vin / Tapas","Cuisine Type":"Argentin","Price":"€€","Comments":"","Arrondissement":75011,"Location":"2 Rue des Goncourt, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Double","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75018,"Location":"87 Rue Lamarck, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'oursin","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75010,"Location":"27 Rue Yves Toudic, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Via emilia","Type":"Restaurant","Cuisine Type":"Italien","Price":"€","Comments":"","Arrondissement":75009,"Location":"22 Rue la Bruyère, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Picola toscana","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75009,"Location":"10 Rue Rochambeau, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le stock Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"88 Rue de Richelieu, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"9ème cru","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75009,"Location":"20 Rue Richer, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Latte Cisterino","Type":"Restaurant","Cuisine Type":"Italien","Price":"€","Comments":"Epicerie","Arrondissement":75009,"Location":"37 Rue Godot de Mauroy, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Namak","Type":"Restaurant","Cuisine Type":"Turque","Price":"€€","Comments":"","Arrondissement":75009,"Location":"18 Rue Saint-Lazare, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Labarra paris","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"87 Rue de Sèvres, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le bon Georges","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"45 Rue Saint-Georges, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez yvette","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"47 Av. Trudaine, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La riposte","Type":"Bar à vin / Tapas","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75009,"Location":"19 Rue de Bruxelles, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Leven foodeli","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€","Comments":"","Arrondissement":75002,"Location":"110 Rue Montmartre, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Casa pregonda","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"Espagnol","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"6 Rue Marie Stuart, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Elbi Paris","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"Egyptien","Price":"€€","Comments":"","Arrondissement":75010,"Location":"54 Rue de Paradis, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Culinaria","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"Pizza","Arrondissement":75009,"Location":"10 Rue Rochambeau, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Bibie Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75005,"Location":"7 Rue Lacépède, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La petite république","Type":"Bar à vin / Tapas, Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75007,"Location":"62 Rue de Bellechasse, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Delicatessen Place","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"7 Rue Jean-Pierre Timbaud, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mazmez","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€€","Comments":"","Arrondissement":75010,"Location":"70 Rue René Boulanger, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Fellows restaurant","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75010,"Location":"84 Rue du Faubourg Saint-Denis, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Adela pasta","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75010,"Location":"20 Rue du Faubourg Poissonnière, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chopchop love","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75010,"Location":"48 Rue du Faubourg Saint-Martin, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Septime bar à vin","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"3 Rue Basfroi, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Griffon","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75004,"Location":"55bis Rue des Francs Bourgeois, 75004 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Osteria Paradiso","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75010,"Location":"35 Rue de Sambre-et-Meuse, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez nous rue Dauphine","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"10 Rue Dauphine, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Terra bar à vin","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75003,"Location":"63 Rue des Gravilliers, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Book bar","Type":"Bar","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75010,"Location":"8 Rue de la Fidélité, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Augustin marchant dvin","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75006,"Location":"26 Rue des Grands Augustins, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Goute de dieu","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"8 Rue Rossini, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pétard","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"70 Rue Jean-Pierre Timbaud, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Red sauce","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75010,"Location":"9 Cr des Petites Écuries, 75010 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Altro frenchie","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"9 Rue du Nil, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Divo","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"116 Rue Amelot, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Frenchie bar a vin","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75002,"Location":"6 Rue du Nil, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"NobiSan","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75003,"Location":"58 Rue de Turenne, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Eggs&Co","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75006,"Location":"11 Rue Bernard Palissy, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Holybelly","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75010,"Location":"5 Rue Lucien Sampaix, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Matin des Oliviers","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75001,"Location":"2 Rue de l'Échelle, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Santa Lyna","Type":"Brunch","Cuisine Type":"Brunch","Price":"€€","Comments":"","Arrondissement":75003,"Location":"96 Bd de Sébastopol, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Paulownia","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75020,"Location":"15 Rue des Vignoles, 75020 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sumibi Kaz","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"11 Rue de Montyon, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cave Vino sapiens","Type":"Bar à vin / Tapas","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75007,"Location":"145 Rue Saint-Dominique, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"ghido ramen","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75010,"Location":"77 Rue du Faubourg Saint-Martin, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"le pantruche paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75009,"Location":"3 Rue Victor Massé, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Delice de Condorcet","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€","Comments":"","Arrondissement":75009,"Location":"10 Rue Condorcet, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Spiti Sou","Type":"Restaurant","Cuisine Type":"Grec","Price":"€€","Comments":"","Arrondissement":75006,"Location":"53 Quai des Grands Augustins, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Gôute","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75002,"Location":"8 Rue Mandar, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"SEEKLO Indian Restaurant","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"96 Rue Oberkampf, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Rojo","Type":"Bar à vin / Tapas","Cuisine Type":"Espagnol","Price":"€€","Comments":"","Arrondissement":75003,"Location":"8 Rue de Beauce, 75003 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Petit bal perdu","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75005,"Location":"32 Rue Tournefort, 75005 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Terra","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75003,"Location":"21 Rue des Gravilliers, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Paul Chêne Cherche midi","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75006,"Location":"79 Rue du Cherche-Midi, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez Georges","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75002,"Location":"1 Rue du Mail, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Vecchio Paris","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€€","Comments":"","Arrondissement":75011,"Location":"14 Rue Crespin du Gast, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":true,"Gastro":false},{"Name":"Atelier de l'entrecote et volaille","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75002,"Location":"128 Rue Réaumur, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mayfair garden","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75116,"Location":"33 Rue de Longchamp, 75116 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Parsley","Type":"Restaurant","Cuisine Type":"Turque","Price":"€","Comments":"Kebab","Arrondissement":75002,"Location":"18 Rue Saint-Fiacre, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Oobatz","Type":"Bar à vin / Tapas","Cuisine Type":"Italien","Price":"€€","Comments":"Specialité pizza","Arrondissement":75011,"Location":"4bis Av. Jean Aicard, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Osteria goto","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"151 Bd Voltaire, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Rori pizza","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"96 Rue Jean-Pierre Timbaud, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Django","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"24 Rue Victor Massé, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Serpent à plume","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75003,"Location":"24 Pl. des Vosges, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Les gouttes de dieu batignolles","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75008,"Location":"13 Bd des Batignolles, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Superfine","Type":"Bar","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"8 Pass. Josset, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Dame Paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"38 Rue Condorcet, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Babi","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"11 Rue Mandar, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Brûlant Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75010,"Location":"12 Rue Philippe de Girard, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sensation Paris","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€€","Comments":"Canard laqué à réserver H-48","Arrondissement":75011,"Location":"32 Rue Saint-Maur, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pink Koï","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"A volonter","Arrondissement":75001,"Location":"8 Rue Coquillière, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mischief Paris","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75003,"Location":"25 Rue des Gravilliers, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Arcane 17","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75003,"Location":"17 Rue Charlot, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'Antica Pizzeria Da Michele","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"19 Rue du Faubourg Saint-Antoine, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Jiuba laurier","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75015,"Location":"52 Rue de la Croix Nivert, 75015 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le tire Bouchon Rodier","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"47 Rue Claude Rodier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Makobé Ramen","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75009,"Location":"48 Rue Saint-Georges, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Temple & Chapon","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75003,"Location":"116 Rue du Temple, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pesserina","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75012,"Location":"65 Rue Traversière, 75012 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Hando Handroll Sèvres","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75006,"Location":"89 Rue de Sèvres, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Touki Bouki","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75020,"Location":"68 Rue Julien Lacroix, 75020 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Les P'tits Potes","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75017,"Location":"33 Rue des Dames, 75017 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"228 litres","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"3 Rue Victor Massé, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le 17.45 Paris Republique","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75010,"Location":"7 Rue René Boulanger, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Bistrot de Tournelles","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75004,"Location":"6 Rue des Tournelles, 75004 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'auberge des crus","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75016,"Location":"13 Rue Bosio, 75016 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Magnolia Pigalle","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"5 Rue Henry Monnier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sapori di parma","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75015,"Location":"80 Av. de Suffren, 75015 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mon crème","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75002,"Location":"64-66 Rue Montmartre, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mantra restaurant","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"17 Rue Claude Rodier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Fana restaurant","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75018,"Location":"14 Rue Ferdinand Flocon, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Seb'on","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75018,"Location":"62 Rue d'Orsel, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La bossue","Type":"Brunch","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75018,"Location":"9 Rue Joseph de Maistre, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pontochoux","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"Specialité curry","Arrondissement":75003,"Location":"18 Rue du Pont aux Choux, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La Petite chaise","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75007,"Location":"36 Rue de Grenelle, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Taco Mesa","Type":"Restaurant","Cuisine Type":"Mexicain","Price":"€","Comments":"Streetfood","Arrondissement":75010,"Location":"40 Rue du Faubourg Poissonnière, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Berkley Garden","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75007,"Location":"6 Av. Bosquet, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Lao siam","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€€","Comments":"","Arrondissement":75019,"Location":"49 Rue de Belleville, 75019 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La malo","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75018,"Location":"176 Rue Marcadet, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Comptoir Beldi","Type":"Restaurant","Cuisine Type":"Marocain","Price":"€€","Comments":"","Arrondissement":75002,"Location":"54 Rue d'Argout, 75002 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Rosario","Type":"Restaurant","Cuisine Type":"Espagnol","Price":"€€","Comments":"","Arrondissement":75002,"Location":"96 Rue de Richelieu, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Benjamin Schmitt","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"41 Rue Catherine de la Rochefoucauld, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Babille","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"Festif","Arrondissement":75002,"Location":"35 Bd de Bonne Nouvelle, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":true,"Gastro":false},{"Name":"Lagano Paris","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75007,"Location":"67 Av. de Breteuil, 75007 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Touki Bouki","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75020,"Location":"68 Rue Julien Lacroix, 75020 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"UKIYO RAMEN","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75009,"Location":"6 Rue de Douai, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Hallyu Kitchen","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€€","Comments":"","Arrondissement":75009,"Location":"6 Rue Henry Monnier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"bonne heure paris 9","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Café bistro","Arrondissement":75009,"Location":"25 Rue de Douai, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Guillaume Grasso La Vera Pizza Napoletana","Type":"Restaurant","Cuisine Type":"Italien","Price":"€","Comments":"Pizza","Arrondissement":75015,"Location":"45 Rue Brancion, 75015 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Yory","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€€","Comments":"","Arrondissement":75009,"Location":"1 Rue de Maubeuge, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Croccante","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"Resto de quartier","Arrondissement":75015,"Location":"138 Rue de Vaugirard, 75015 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mandoobar","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€€","Comments":"","Arrondissement":75008,"Location":"7 Rue d'Édimbourg, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"pain vin fromage paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Fondues et raclette","Arrondissement":75004,"Location":"3 Rue Geoffroy l'Angevin, 75004 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Les Marmottes","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Fondues et raclette","Arrondissement":75001,"Location":"26 Rue de la Grande Truanderie, 75001 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"SUMiBi KAZ","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"11 Rue de Montyon, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"le gentil paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75007,"Location":"26 Rue Surcouf, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"PanoPano (ex: Panorama)","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"153 Rue Saint-Maur, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'Arpaon","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75018,"Location":"57 Rue Montcalm, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Nigiri Bar","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"A volonter","Arrondissement":75009,"Location":"10 bis Rue Geoffroy-Marie, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"la boule rouge paris 9","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"1 Rue de la Boule Rouge, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Udon Kisin","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75008,"Location":"7-9 Rue de Ponthieu, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"michi paris","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€€","Comments":"","Arrondissement":75002,"Location":"58bis Rue Sainte-Anne, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Moulin à vent","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75005,"Location":"20 Rue des Fossés Saint-Bernard, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Creme Restaurant","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75018,"Location":"18 Rue Eugène Sue, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chantoiseau","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75018,"Location":"63 Rue Lepic, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Mieux Paris 9","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"21 Rue Saint-Lazare, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Sankaku","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"Onigiri","Arrondissement":75009,"Location":"47 Rue Condorcet, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le comptoir Canaille","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"31 Rue la Bruyère, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Espace Gohan","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75010,"Location":"12 Rue de Nancy, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Clutch","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75011,"Location":"62 Rue de Montreuil, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"magnolia paris 9","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"5 Rue Henry Monnier, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Imperial Raviolis","Type":"Restaurant","Cuisine Type":"Chinois","Price":"€","Comments":"","Arrondissement":75011,"Location":"15 Rue Louis Bonnet, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Brigade du tigre","Type":"Restaurant","Cuisine Type":"Thailandais","Price":"€€","Comments":"","Arrondissement":75010,"Location":"38 Rue du Faubourg Poissonnière, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Gourou Paris","Type":"Restaurant","Cuisine Type":"Indien","Price":"€€","Comments":"","Arrondissement":75011,"Location":"42 Rue Léon Frot, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez Martine","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75016,"Location":"54 Rue de Longchamp, 75016 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Echo Paris","Type":"Brunch","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75002,"Location":"95 Rue d'Aboukir, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Empreinte","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€€","Comments":"Gastro","Arrondissement":75002,"Location":"3 Rue Saint-Augustin, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":true},{"Name":"L'assiette Paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75014,"Location":"181 Rue du Château, 75014 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"A l'imroviste","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75017,"Location":"21 Rue Médéric, 75017 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Kimono","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75006,"Location":"66 Rue du Cherche-Midi, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Settebello","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75016,"Location":"9 Rue Duban, 75016 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Prima pizza gourmet","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75017,"Location":"103 Rue des Dames, 75017 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Assanabel Paris - Alésia","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€€","Comments":"","Arrondissement":75014,"Location":"6 Rue d'Alésia, 75014 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'Auberge bressane","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75007,"Location":"16 Av. de la Motte-Picquet, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"MUKU – Comptoir Japonais","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€€","Comments":"","Arrondissement":75006,"Location":"8 Rue Suger, 75006 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le Coyote Paris","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75003,"Location":"86 Rue des Archives, 75003 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"MA-SHI-TA","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€","Comments":"","Arrondissement":75014,"Location":"9 Rue Poirier de Narçay, 75014 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Cave Sauvage","Type":"Bar à vin / Tapas","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75006,"Location":"60 Rue du Cherche-Midi, 75006 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Motsuya","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"Streetfood japonaise","Arrondissement":75010,"Location":"9 Cité Riverin, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Trufettes Comptoir vivant","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75017,"Location":"31 Rue Truffaut, 75017 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La rotisserie d'argent","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75005,"Location":"19 Quai de la Tournelle, 75005 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Patsy","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"26 Rue Bergère, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Ozlem","Type":"Restaurant","Cuisine Type":"Turque","Price":"€","Comments":"Kebab","Arrondissement":75010,"Location":"57 R. des Petites Écuries, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":true,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Biche Paris","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"Classique français","Arrondissement":75008,"Location":"129 Rue du Faubourg Saint-Honoré, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Etsi le Bistro","Type":"Restaurant","Cuisine Type":"Grec","Price":"€€","Comments":"","Arrondissement":75018,"Location":"23 Rue Eugène Carrière, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"L'Area","Type":"Restaurant","Cuisine Type":"Libanais","Price":"€€","Comments":"Un peu d'ambiance le weekend","Arrondissement":75004,"Location":"10 Rue des Tournelles, 75004 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Clos d'Astorg","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Classique français","Arrondissement":75008,"Location":"22 Rue d'Astorg, 75008 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Chez Alfred & Léon","Type":"Bar à vin / Tapas","Cuisine Type":"Français","Price":"€","Comments":"","Arrondissement":75002,"Location":"35 Rue Saint-Sauveur, 75002 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pratz","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€","Comments":"","Arrondissement":75009,"Location":"59 Rue Jean-Baptiste Pigalle, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Picolo caratello paris","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75018,"Location":"8 Rue Audran, 75018 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Duvin bistrot","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"Français classique","Arrondissement":75009,"Location":"9Bis Rue Jean-Baptiste Pigalle, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Pik Nik","Type":"Restaurant","Cuisine Type":"Coréen","Price":"€","Comments":"Street food","Arrondissement":75009,"Location":"28 Rue Lamartine, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"CLASSIQUE","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75009,"Location":"1bis Rue Lallier, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Uva cave","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"21 Rue de Malte, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Isola La Cantine Littéraire","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"15 Rue Ternaux, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"YARD, Restaurant & Cave à vin nature","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"6 Rue de Mont-Louis, 75011 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"septime la cave","Type":"Bar à vin / Tapas","Cuisine Type":"International","Price":"€€","Comments":"","Arrondissement":75011,"Location":"3 Rue Basfroi, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Duvin cave","Type":"Bar à vin / Tapas","Cuisine Type":"Français","Price":"€€€","Comments":"Possible de reserver petite salle privative","Arrondissement":75009,"Location":"9Bis Rue Jean-Baptiste Pigalle, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le Radis Beurre","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75015,"Location":"51 Bd Garibaldi, 75015 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Marche couvert Saint Quentin","Type":"Restaurant","Cuisine Type":"International","Price":"€€","Comments":"Possible de manger dans plusieurs restaurants","Arrondissement":75010,"Location":"85 bis Bd de Magenta, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Canailles","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75010,"Location":"104 Quai de Jemmapes, 75010 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Al caratello","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€","Comments":"","Arrondissement":75018,"Location":"5 Rue Audran, 75018 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"La Démocratie","Type":"Restaurant","Cuisine Type":"Français","Price":"€€€","Comments":"","Arrondissement":75007,"Location":"34 Bd Raspail, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"OKAWARI","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"","Arrondissement":75015,"Location":"199 Rue de Vaugirard, 75015 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Wagaya Ramen","Type":"Restaurant","Cuisine Type":"Japonais","Price":"€","Comments":"Ramen","Arrondissement":75011,"Location":"25 Rue Jean-Pierre Timbaud, 75011 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Gloria Osteria","Type":"Restaurant","Cuisine Type":"Italien","Price":"€€€","Comments":"","Arrondissement":75007,"Location":"41 Rue de Lille, 75007 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":true,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Wilette Café Toquet","Type":"Restaurant","Cuisine Type":"Français","Price":"€€","Comments":"","Arrondissement":75009,"Location":"21 Rue de Trévise, 75009 Paris","Sans reservation":false,"Terrasse":true,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false},{"Name":"Le Trente","Type":"Restaurant","Cuisine Type":"International","Price":"€€€","Comments":"","Arrondissement":75009,"Location":"30 Rue Victor Massé, 75009 Paris","Sans reservation":false,"Terrasse":false,"Streetfood":false,"Grande tablées":false,"Rooftop":false,"Festif":false,"Gastro":false}];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE & STORAGE
+// ─────────────────────────────────────────────────────────────────────────────
+const LS_DATA   = 'paris_restos_data_v2';
+const LS_COORDS = 'paris_restos_coords_v1';
+
+const ARR_CENTERS = {
+  75001:[48.8603,2.3477],75002:[48.8666,2.3464],75003:[48.8632,2.3590],
+  75004:[48.8534,2.3526],75005:[48.8462,2.3518],75006:[48.8496,2.3338],
+  75007:[48.8566,2.3121],75008:[48.8740,2.3080],75009:[48.8784,2.3390],
+  75010:[48.8769,2.3626],75011:[48.8591,2.3790],75012:[48.8405,2.3858],
+  75013:[48.8326,2.3599],75014:[48.8289,2.3270],75015:[48.8388,2.2944],
+  75016:[48.8633,2.2694],75017:[48.8873,2.3118],75018:[48.8909,2.3455],
+  75019:[48.8876,2.3807],75020:[48.8624,2.4003],75116:[48.8633,2.2694]
+};
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(LS_DATA);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(INITIAL_DATA));
+}
+
+function saveData() {
+  try { localStorage.setItem(LS_DATA, JSON.stringify(DATA)); } catch(e) {}
+}
+
+function loadCoords() {
+  try {
+    const saved = localStorage.getItem(LS_COORDS);
+    return saved ? JSON.parse(saved) : {};
+  } catch(e) { return {}; }
+}
+
+function saveCoords() {
+  try { localStorage.setItem(LS_COORDS, JSON.stringify(COORDS_CACHE)); } catch(e) {}
+}
+
+let DATA = loadData();
+let COORDS_CACHE = loadCoords();
+
+const FEATURES = ['Terrasse','Sans reservation','Streetfood','Grande tablées','Rooftop','Festif','Gastro'];
+const FEATURE_EMOJI = {'Terrasse':'☀️','Sans reservation':'🚶','Streetfood':'🥡','Grande tablées':'👥','Rooftop':'🏙','Festif':'🎉','Gastro':'⭐'};
+
+let filters = { arr: new Set(), cuisine: new Set(), type: new Set(), price: new Set(), features: {} };
+let searchQuery = '';
+let mapInstance, markerLayer;
+let activeMarkers = [];
+let geocodingQueue = [];
+let geocodingInProgress = false;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GEOCODING (runs in background from user's browser)
+// ─────────────────────────────────────────────────────────────────────────────
+function getCoords(r) {
+  const key = r.Location.trim();
+  if (COORDS_CACHE[key]) return COORDS_CACHE[key];
+  const c = ARR_CENTERS[r.Arrondissement] || [48.8566, 2.3522];
+  // Spread within arrondissement (deterministic by name hash)
+  let h = 0;
+  for (let i = 0; i < r.Name.length; i++) h = (h * 31 + r.Name.charCodeAt(i)) & 0xffffffff;
+  const lat = c[0] + ((h & 0xff) / 255 - 0.5) * 0.008;
+  const lng = c[1] + ((h >> 8 & 0xff) / 255 - 0.5) * 0.010;
+  return [lat, lng];
+}
+
+async function geocodeOne(address) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=fr`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'fr', 'User-Agent': 'RestaurantMap/1.0' } });
+    const data = await res.json();
+    if (data.length) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  } catch(e) {}
+  return null;
+}
+
+async function processGeocodeQueue() {
+  if (geocodingInProgress || geocodingQueue.length === 0) return;
+  geocodingInProgress = true;
+  const status = document.getElementById('geocoding-status');
+  status.style.display = 'flex';
+  status.classList.add('active');
+
+  while (geocodingQueue.length > 0) {
+    const { key, address } = geocodingQueue.shift();
+    if (COORDS_CACHE[key]) continue;
+    document.getElementById('geocoding-text').textContent = `Géocodage ${geocodingQueue.length} restants…`;
+    const coords = await geocodeOne(address);
+    if (coords) {
+      COORDS_CACHE[key] = coords;
+      saveCoords();
+      renderMarkers(filterData()); // refresh markers
+    }
+    await new Promise(r => setTimeout(r, 1200));
+  }
+
+  geocodingInProgress = false;
+  status.style.display = 'none';
+}
+
+function scheduleGeocoding() {
+  DATA.forEach(r => {
+    const key = r.Location.trim();
+    if (!COORDS_CACHE[key] && r.Location.trim().length > 5) {
+      geocodingQueue.push({ key, address: r.Location.trim() });
+    }
+  });
+  // Deduplicate
+  const seen = new Set();
+  geocodingQueue = geocodingQueue.filter(q => { if(seen.has(q.key)) return false; seen.add(q.key); return true; });
+  if (geocodingQueue.length > 0) setTimeout(processGeocodeQueue, 2000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAP
+// ─────────────────────────────────────────────────────────────────────────────
+function markerColor(type) {
+  if (!type) return '#7f8c8d';
+  const t = type.toLowerCase();
+  if (t.includes('brunch')) return '#e67e22';
+  if (t.includes('tapas') || t.includes('bar à vin')) return '#27ae60';
+  if (t === 'bar') return '#8e44ad';
+  if (t === 'boite') return '#2980b9';
+  return '#c0392b';
+}
+
+function initMap() {
+  mapInstance = L.map('map', { zoomControl: true, attributionControl: false }).setView([48.866, 2.345], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+    maxZoom: 19, subdomains: 'abc'
+  }).addTo(mapInstance);
+  markerLayer = L.layerGroup().addTo(mapInstance);
+  L.control.attribution({ prefix: '© OpenStreetMap' }).addTo(mapInstance);
+}
+
+function renderMarkers(data) {
+  markerLayer.clearLayers();
+  activeMarkers = [];
+  document.getElementById('shown-count').textContent = data.length;
+
+  data.forEach(r => {
+    const coords = getCoords(r);
+    const color = markerColor(r.Type);
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.style.background = color;
+    const icon = L.divIcon({ className: '', html: el, iconSize: [11,11], iconAnchor: [5.5,5.5] });
+    const marker = L.marker(coords, { icon });
+
+    const chips = FEATURES.filter(f => r[f]).map(f =>
+      `<span class="chip chip-gray">${FEATURE_EMOJI[f]} ${f}</span>`).join('');
+
+    marker.bindPopup(`
+      <div class="popup-name">${r.Name}</div>
+      <div class="popup-sub">${r['Cuisine Type']} · ${r.Type} · ${r.Price}</div>
+      <div class="popup-addr">📍 ${r.Location}</div>
+      ${r.Comments ? `<div class="popup-comment">${r.Comments}</div>` : ''}
+      <div class="popup-chips">${chips}</div>
+      <button class="popup-edit-btn" onclick="openModal(${DATA.indexOf(r)}); this.closest('.leaflet-popup').remove();">✏️ Modifier</button>
+    `, { maxWidth: 260 });
+
+    marker.addTo(markerLayer);
+    activeMarkers.push({ marker, r });
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FILTERS
+// ─────────────────────────────────────────────────────────────────────────────
+function buildFilters() {
+  // Arrondissements
+  const arrs = [...new Set(DATA.map(r => r.Arrondissement))].sort((a,b) => a-b);
+  const grid = document.getElementById('arr-grid');
+  grid.innerHTML = '';
+  arrs.forEach(a => {
+    const n = a === 75116 ? '16b' : String(a).slice(-2).replace(/^0/,'') + 'e';
+    const btn = document.createElement('button');
+    btn.className = 'arr-btn' + (filters.arr.has(a) ? ' active' : '');
+    btn.textContent = n; btn.dataset.arr = a;
+    btn.onclick = () => { btn.classList.toggle('active'); filters.arr.has(a) ? filters.arr.delete(a) : filters.arr.add(a); update(); };
+    grid.appendChild(btn);
+  });
+
+  // Cuisines
+  const cuisines = [...new Set(DATA.map(r => r['Cuisine Type']))].filter(c => c && c !== 'N.A').sort();
+  const cWrap = document.getElementById('cuisine-tags');
+  cWrap.innerHTML = '';
+  cuisines.forEach(c => {
+    const tag = document.createElement('button');
+    tag.className = 'tag' + (filters.cuisine.has(c) ? ' active' : '');
+    tag.textContent = c;
+    tag.onclick = () => { tag.classList.toggle('active'); filters.cuisine.has(c) ? filters.cuisine.delete(c) : filters.cuisine.add(c); update(); };
+    cWrap.appendChild(tag);
+  });
+
+  // Update cuisine datalist
+  const dl = document.getElementById('cuisine-datalist');
+  dl.innerHTML = cuisines.map(c => `<option value="${c}">`).join('');
+
+  // Types
+  const rawTypes = DATA.flatMap(r => r.Type.split(',').map(t => t.trim()));
+  const types = [...new Set(rawTypes)].sort();
+  const tWrap = document.getElementById('type-tags');
+  tWrap.innerHTML = '';
+  types.forEach(t => {
+    const tag = document.createElement('button');
+    tag.className = 'tag' + (filters.type.has(t) ? ' active' : '');
+    tag.textContent = t;
+    tag.onclick = () => { tag.classList.toggle('active'); filters.type.has(t) ? filters.type.delete(t) : filters.type.add(t); update(); };
+    tWrap.appendChild(tag);
+  });
+
+  // Prices
+  if (!document.getElementById('price-row').children.length) {
+    ['€','€€','€€€','€€€€'].forEach(p => {
+      const btn = document.createElement('button');
+      btn.className = 'price-btn'; btn.textContent = p;
+      btn.onclick = () => { btn.classList.toggle('active'); filters.price.has(p) ? filters.price.delete(p) : filters.price.add(p); update(); };
+      document.getElementById('price-row').appendChild(btn);
+    });
+  }
+
+  // Features
+  if (!document.getElementById('feature-toggles').children.length) {
+    FEATURES.forEach(key => {
+      filters.features[key] = false;
+      const label = document.createElement('label');
+      label.className = 'feature-toggle';
+      label.innerHTML = `<input type="checkbox" data-f="${key}"><div class="toggle-pill"></div><span class="feature-label">${FEATURE_EMOJI[key]} ${key}</span>`;
+      label.querySelector('input').onchange = e => { filters.features[key] = e.target.checked; update(); };
+      document.getElementById('feature-toggles').appendChild(label);
+    });
+  }
+}
+
+function filterData() {
+  return DATA.filter(r => {
+    if (filters.arr.size && !filters.arr.has(r.Arrondissement)) return false;
+    if (filters.cuisine.size && !filters.cuisine.has(r['Cuisine Type'])) return false;
+    if (filters.type.size) {
+      const rTypes = r.Type.split(',').map(t => t.trim());
+      if (![...filters.type].some(t => rTypes.includes(t))) return false;
+    }
+    if (filters.price.size && !filters.price.has(r.Price)) return false;
+    for (const [k,v] of Object.entries(filters.features)) { if (v && !r[k]) return false; }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!r.Name.toLowerCase().includes(q) && !r['Cuisine Type'].toLowerCase().includes(q) && !r.Location.toLowerCase().includes(q) && !r.Comments.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CARDS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderCards() {
+  const data = filterData();
+  const sort = document.getElementById('sort-select').value;
+  const sorted = [...data];
+  if (sort === 'name') sorted.sort((a,b) => a.Name.localeCompare(b.Name,'fr'));
+  else if (sort === 'price-asc') sorted.sort((a,b) => a.Price.length - b.Price.length);
+  else if (sort === 'price-desc') sorted.sort((a,b) => b.Price.length - a.Price.length);
+  else if (sort === 'arr') sorted.sort((a,b) => a.Arrondissement - b.Arrondissement);
+
+  document.getElementById('card-count').innerHTML = `<b>${sorted.length}</b>`;
+  const container = document.getElementById('cards-container');
+
+  if (!sorted.length) {
+    container.innerHTML = `<div class="no-results"><div class="emoji">🔍</div><em>Aucun restaurant trouvé</em><p>Modifie tes filtres pour voir plus de résultats</p></div>`;
+    return;
+  }
+
+  container.innerHTML = sorted.map(r => {
+    const idx = DATA.indexOf(r);
+    const arrNum = r.Arrondissement === 75116 ? '16e bis' : String(r.Arrondissement).slice(-2).replace(/^0/,'') + 'e';
+    const chips = FEATURES.filter(f => r[f]).map(f => {
+      const cls = f==='Terrasse'||f==='Rooftop'?'chip-green':f==='Gastro'?'chip-gold':f==='Festif'?'chip-red':'chip-gray';
+      return `<span class="chip ${cls}">${FEATURE_EMOJI[f]}</span>`;
+    }).join('');
+    return `<div class="card" onclick="focusMarker(${idx})">
+      <div class="card-actions">
+        <button class="card-action-btn edit" onclick="event.stopPropagation();openModal(${idx})" title="Modifier">✏️</button>
+        <button class="card-action-btn delete" onclick="event.stopPropagation();deleteResto(${idx})" title="Supprimer">🗑</button>
+      </div>
+      <div class="card-name">${r.Name}</div>
+      <div class="card-meta">
+        <span class="card-arr">${arrNum}</span>
+        <span>·</span><span>${r['Cuisine Type']}</span>
+        <span>·</span><span class="card-price">${r.Price}</span>
+      </div>
+      <div style="font-size:0.59rem;color:var(--text3);margin-bottom:3px">${r.Type.split(',')[0].trim()}</div>
+      ${chips ? `<div class="card-chips">${chips}</div>` : ''}
+      ${r.Comments ? `<div class="card-comment">${r.Comments}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function focusMarker(idx) {
+  const r = DATA[idx];
+  const coords = getCoords(r);
+  mapInstance.flyTo(coords, 17, { duration: 0.7 });
+  activeMarkers.forEach(m => {
+    const el = m.marker.getElement()?.querySelector('.custom-marker');
+    if (el) el.classList.remove('highlighted');
+    if (DATA.indexOf(m.r) === idx) {
+      m.marker.openPopup();
+      if (el) el.classList.add('highlighted');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UPDATE
+// ─────────────────────────────────────────────────────────────────────────────
+function update() {
+  const data = filterData();
+  renderMarkers(data);
+  renderCards();
+  document.getElementById('total-count').textContent = DATA.length;
+}
+
+function resetFilters() {
+  filters.arr.clear(); filters.cuisine.clear(); filters.type.clear(); filters.price.clear();
+  Object.keys(filters.features).forEach(k => filters.features[k] = false);
+  searchQuery = '';
+  document.getElementById('search-input').value = '';
+  document.querySelectorAll('.arr-btn.active,.tag.active,.price-btn.active').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.feature-toggle input').forEach(el => el.checked = false);
+  update();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODAL (Add / Edit)
+// ─────────────────────────────────────────────────────────────────────────────
+function openModal(idx) {
+  const isNew = idx === null;
+  document.getElementById('modal-title').textContent = isNew ? 'Ajouter un restaurant' : 'Modifier le restaurant';
+  document.getElementById('edit-idx').value = isNew ? '' : idx;
+
+  const r = isNew ? {} : DATA[idx];
+
+  document.getElementById('f-name').value = r.Name || '';
+  document.getElementById('f-type').value = r.Type || 'Restaurant';
+  document.getElementById('f-cuisine').value = r['Cuisine Type'] || '';
+  document.getElementById('f-price').value = r.Price || '€€';
+  document.getElementById('f-arr').value = r.Arrondissement || 75009;
+  document.getElementById('f-location').value = r.Location || '';
+  document.getElementById('f-comments').value = r.Comments || '';
+
+  // Feature checkboxes
+  const fc = document.getElementById('f-features');
+  fc.innerHTML = '';
+  FEATURES.forEach(key => {
+    const label = document.createElement('label');
+    label.className = 'form-checkbox-label' + (r[key] ? ' checked' : '');
+    label.innerHTML = `<input type="checkbox" value="${key}" ${r[key] ? 'checked' : ''}>${FEATURE_EMOJI[key]} ${key}`;
+    label.querySelector('input').onchange = e => {
+      label.classList.toggle('checked', e.target.checked);
+    };
+    fc.appendChild(label);
+  });
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('f-name').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function saveRestaurant() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  const featureVals = {};
+  FEATURES.forEach(key => { featureVals[key] = false; });
+  document.querySelectorAll('#f-features input[type=checkbox]').forEach(cb => {
+    if (cb.checked) featureVals[cb.value] = true;
+  });
+
+  const r = {
+    Name: name,
+    Type: document.getElementById('f-type').value,
+    'Cuisine Type': document.getElementById('f-cuisine').value.trim() || 'International',
+    Price: document.getElementById('f-price').value,
+    Arrondissement: parseInt(document.getElementById('f-arr').value),
+    Location: document.getElementById('f-location').value.trim(),
+    Comments: document.getElementById('f-comments').value.trim(),
+    ...featureVals
+  };
+
+  const idxStr = document.getElementById('edit-idx').value;
+  if (idxStr === '') {
+    DATA.push(r);
+  } else {
+    // Clear cached coords if address changed
+    const old = DATA[parseInt(idxStr)];
+    if (old.Location !== r.Location) delete COORDS_CACHE[old.Location.trim()];
+    DATA[parseInt(idxStr)] = r;
+  }
+
+  // Geocode new address
+  if (r.Location && !COORDS_CACHE[r.Location.trim()]) {
+    geocodingQueue.unshift({ key: r.Location.trim(), address: r.Location.trim() });
+    if (!geocodingInProgress) processGeocodeQueue();
+  }
+
+  saveData();
+  closeModal();
+  buildFilters();
+  update();
+}
+
+function deleteResto(idx) {
+  const r = DATA[idx];
+  if (!confirm(`Supprimer "${r.Name}" ?`)) return;
+  DATA.splice(idx, 1);
+  saveData();
+  buildFilters();
+  update();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPORT / IMPORT
+// ─────────────────────────────────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mes_restos_paris.json';
+  a.click();
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (Array.isArray(imported) && imported.length && imported[0].Name) {
+        if (confirm(`Importer ${imported.length} restaurants ? (remplacera les données actuelles)`)) {
+          DATA = imported;
+          saveData();
+          buildFilters();
+          update();
+          scheduleGeocoding();
+        }
+      } else { alert('Format JSON non reconnu'); }
+    } catch(e) { alert('Erreur de lecture du fichier'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEARCH
+// ─────────────────────────────────────────────────────────────────────────────
+let searchTimeout;
+document.getElementById('search-input').addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => { searchQuery = e.target.value.trim(); update(); }, 200);
+});
+
+// Close modal on overlay click
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────────────────────────────────────────
+initMap();
+buildFilters();
+update();
+scheduleGeocoding();
+</script>
+</body>
+</html>
