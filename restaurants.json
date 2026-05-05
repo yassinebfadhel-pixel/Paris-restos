@@ -4398,5 +4398,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "nanarella",
+    "Type": "Restaurant",
+    "Cuisine Type": "Espagnol",
+    "Price": "€€",
+    "Arrondissement": 75009,
+    "Location": "Piazza di S. Calisto, 7/a, 00153 Roma RM, Italie",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
