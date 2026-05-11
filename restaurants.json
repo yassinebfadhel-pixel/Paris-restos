@@ -4478,5 +4478,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Vaudeville",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€€",
+    "Arrondissement": 75002,
+    "Location": "9 Rue Vivienne, 75002 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
