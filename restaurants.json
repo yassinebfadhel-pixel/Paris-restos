@@ -4558,5 +4558,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "MERSIN - Döner Taverna - Kebap, Mezze & Tantuni",
+    "Type": "Restaurant",
+    "Cuisine Type": "Turque",
+    "Price": "€€",
+    "Arrondissement": 75019,
+    "Location": "123 Av. Simon Bolivar, 75019 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
