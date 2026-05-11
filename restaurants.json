@@ -4398,5 +4398,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Our House",
+    "Type": "Restaurant",
+    "Cuisine Type": "Japonais",
+    "Price": "€",
+    "Arrondissement": 75001,
+    "Location": "35 Rue Coquillière, 75001 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
