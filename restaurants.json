@@ -4510,5 +4510,21 @@
     "Rooftop": false,
     "Festif": true,
     "Gastro": false
+  },
+  {
+    "Name": "Brasserie Martin",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "24 Rue Saint-Ambroise, 75011 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
