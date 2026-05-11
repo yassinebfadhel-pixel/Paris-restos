@@ -4526,5 +4526,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Jardin 21",
+    "Type": "Bar",
+    "Cuisine Type": "International",
+    "Price": "€",
+    "Arrondissement": 75019,
+    "Location": "12a Rue Ella Fitzgerald, 75019 Paris",
+    "Comments": "Guinguette sur les quais",
+    "Terrasse": true,
+    "Sans reservation": true,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": true,
+    "Gastro": false
   }
 ]
