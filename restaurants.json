@@ -4446,5 +4446,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Face B",
+    "Type": "Bar à vin / Tapas",
+    "Cuisine Type": "Japonais",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "7 Rue Pache, 75011 Paris",
+    "Comments": "Izakaya",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
