@@ -4574,5 +4574,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Faaï",
+    "Type": "Restaurant",
+    "Cuisine Type": "Thailandais",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "15 Rue Trousseau, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
