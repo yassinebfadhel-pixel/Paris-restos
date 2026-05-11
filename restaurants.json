@@ -4542,5 +4542,21 @@
     "Rooftop": false,
     "Festif": true,
     "Gastro": false
+  },
+  {
+    "Name": "SaltoBar",
+    "Type": "Restaurant",
+    "Cuisine Type": "Espagnol",
+    "Price": "€€€",
+    "Arrondissement": 75011,
+    "Location": "11 Rue Camille Crespin du Gast, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
