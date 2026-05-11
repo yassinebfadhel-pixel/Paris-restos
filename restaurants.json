@@ -4430,5 +4430,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Mishka Paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75002,
+    "Location": "14 Rue Mandar, 75002 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
