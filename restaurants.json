@@ -4494,5 +4494,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Fracas",
+    "Type": "Bar",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75018,
+    "Location": "76 Rue Marcadet, 75018 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": true,
+    "Gastro": false
   }
 ]
