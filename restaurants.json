@@ -4606,5 +4606,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "TOY Ramen",
+    "Type": "Restaurant",
+    "Cuisine Type": "Japonais",
+    "Price": "€",
+    "Arrondissement": 75012,
+    "Location": "21 Rue Saint-Nicolas, 75012 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
