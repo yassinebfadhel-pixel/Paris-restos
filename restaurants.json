@@ -4622,5 +4622,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "BẾP",
+    "Type": "Restaurant",
+    "Cuisine Type": "Vietnamien",
+    "Price": "€",
+    "Arrondissement": 75009,
+    "Location": "49 Rue Marguerite de Rochechouart, 75009 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
