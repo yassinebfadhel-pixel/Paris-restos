@@ -4734,5 +4734,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Patine Bistrot",
+    "Type": "Restaurant",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "16 Rue la Vacquerie, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
