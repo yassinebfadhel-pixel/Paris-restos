@@ -4750,5 +4750,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Le Bizetro paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75016,
+    "Location": "6 Rue Georges Bizet, 75116 Paris",
+    "Comments": "Français classique",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
