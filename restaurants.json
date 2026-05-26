@@ -4718,5 +4718,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "L'Antica Pizzeria Da Michele",
+    "Type": "Restaurant",
+    "Cuisine Type": "Italien",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "19 Rue du Faubourg Saint-Antoine, 75011 Paris",
+    "Comments": "Pizza",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
