@@ -4686,5 +4686,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Lotta Restaurant",
+    "Type": "Restaurant",
+    "Cuisine Type": "Italien",
+    "Price": "€€",
+    "Arrondissement": 75001,
+    "Location": "8 Rue Jean-Jacques Rousseau, 75001 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
