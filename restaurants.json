@@ -4798,5 +4798,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Dame Paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75009,
+    "Location": "38 Rue Condorcet, 75009 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
