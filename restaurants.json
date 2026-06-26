@@ -4862,5 +4862,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Fellows Faubourg St-Denis",
+    "Type": "Restaurant",
+    "Cuisine Type": "Italien",
+    "Price": "€€",
+    "Arrondissement": 75010,
+    "Location": "84 Rue du Faubourg Saint-Denis, 75010 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
