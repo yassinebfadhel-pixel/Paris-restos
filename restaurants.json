@@ -4878,5 +4878,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Osteria Paradiso",
+    "Type": "Restaurant",
+    "Cuisine Type": "Italien",
+    "Price": "€€",
+    "Arrondissement": 75010,
+    "Location": "35 Rue de Sambre-et-Meuse, 75010 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
