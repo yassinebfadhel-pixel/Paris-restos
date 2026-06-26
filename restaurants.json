@@ -4814,5 +4814,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Bigoudi Rooftop",
+    "Type": "Bar à vin / Tapas",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75016,
+    "Location": "38 Av. Raymond Poincaré, 75116 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": true,
+    "Festif": false,
+    "Gastro": false
   }
 ]
