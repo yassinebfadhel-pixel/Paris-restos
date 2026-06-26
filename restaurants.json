@@ -4766,5 +4766,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Restaurant Panurge",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€€",
+    "Arrondissement": 75002,
+    "Location": "24 Rue du Sentier, 75002 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
