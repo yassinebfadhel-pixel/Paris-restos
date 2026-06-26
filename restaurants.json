@@ -4894,5 +4894,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Calcifer",
+    "Type": "Restaurant",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75003,
+    "Location": "41 Rue Notre Dame de Nazareth, 75003 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
