@@ -4782,5 +4782,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "SENsation",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€€€",
+    "Arrondissement": 75011,
+    "Location": "32 Rue Saint-Maur, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
