@@ -4855,7 +4855,7 @@
     "Arrondissement": 75009,
     "Location": "33 Rue de Navarin, 75009 Paris",
     "Comments": "Bistrot",
-    "Terrasse": false,
+    "Terrasse": true,
     "Sans reservation": false,
     "Streetfood": false,
     "Grande tablées": false,
