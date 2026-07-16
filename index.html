@@ -180,6 +180,90 @@ header{padding:10px 20px;display:flex;align-items:center;justify-content:space-b
 .token-info a:hover{text-decoration:underline}
 .token-info code{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:.7rem;color:var(--red);font-family:monospace}
 .token-error{font-size:.72rem;color:var(--red);display:none;margin-top:-6px}
+
+/* Mobile filter toggle button - hidden on desktop */
+.filter-toggle-btn{display:none}
+
+/* ══════════════ MOBILE / RESPONSIVE ══════════════ */
+@media (max-width:768px){
+  body{height:100dvh}
+
+  /* HEADER stacks */
+  header{flex-wrap:wrap;padding:8px 12px;gap:8px}
+  .logo{order:1;flex:1}
+  .logo h1{font-size:1.05rem}
+  .header-actions{order:2}
+  .search-wrap{order:3;flex-basis:100%;max-width:100%}
+  .header-actions .btn{padding:6px 10px;font-size:.7rem}
+  #save-status,#geocoding-bar{font-size:.6rem}
+
+  /* LAYOUT: stack vertically */
+  .main{flex-direction:column}
+
+  /* SIDEBAR becomes a slide-down panel, hidden by default */
+  .sidebar{
+    position:fixed;top:0;left:0;right:0;bottom:0;width:100%;z-index:6000;
+    transform:translateY(-100%);transition:transform .28s ease;
+    padding:16px 16px 40px;box-shadow:var(--shadow-lg);
+  }
+  .sidebar.open{transform:translateY(0)}
+  .sidebar-close{
+    display:flex;align-items:center;justify-content:center;
+    position:sticky;top:-16px;margin:-16px -16px 4px;padding:12px;
+    background:var(--bg2);border-bottom:1px solid var(--border);
+    font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;color:var(--text);
+  }
+  .sidebar-close button{
+    position:absolute;right:12px;width:30px;height:30px;border-radius:7px;
+    border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:16px;cursor:pointer;
+  }
+
+  /* Floating "Filtres" button */
+  .filter-toggle-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:5500;
+    background:var(--red);color:#fff;border:none;border-radius:24px;
+    padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;
+    box-shadow:var(--shadow-lg);cursor:pointer;
+  }
+  .filter-toggle-btn .fcount{
+    background:#fff;color:var(--red);border-radius:12px;padding:1px 7px;font-size:.72rem;font-weight:700;
+  }
+
+  /* MAP bigger and tap-friendly */
+  #map{height:44vh;border-bottom:none}
+  .legend-strip{gap:7px;padding:5px 8px}
+  .legend-item{font-size:.54rem}
+
+  /* RESULTS bar */
+  .results-bar{padding:9px 14px}
+
+  /* CARDS: single column, full width, full name visible */
+  .cards-container{
+    grid-template-columns:1fr;gap:8px;padding:10px 12px 80px;
+  }
+  .card{padding:13px 14px}
+  .card-name{
+    font-size:1.02rem;padding-right:60px;
+    white-space:normal;overflow:visible;line-height:1.25;
+  }
+  .card-meta{font-size:.68rem;flex-wrap:wrap}
+  .card-comment{font-size:.72rem}
+  .chip{font-size:.62rem;padding:2px 6px}
+  /* Always show edit/delete on mobile (no hover) */
+  .card-actions{display:flex}
+  .card-action-btn{width:28px;height:28px;font-size:.85rem}
+
+  /* Lock button - move up so it doesn't overlap filter button */
+  .lock-btn{bottom:70px;right:14px}
+
+  /* MODALS full-width friendly */
+  .modal{width:100%;max-width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;max-height:92vh}
+  .modal-overlay{align-items:flex-end}
+  .modal-sm{width:100%}
+  .form-row{grid-template-columns:1fr}
+  .form-input,.form-select,.form-textarea{font-size:16px}  /* 16px prevents iOS zoom */
+}
 </style>
 </head>
 <body>
@@ -205,7 +289,11 @@ header{padding:10px 20px;display:flex;align-items:center;justify-content:space-b
 </header>
 
 <div class="main">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-close">
+      Filtres
+      <button onclick="toggleFilters()">✕</button>
+    </div>
     <div>
       <div class="filter-title">Arrondissement</div>
       <div class="arr-grid" id="arr-grid"></div>
@@ -254,6 +342,11 @@ header{padding:10px 20px;display:flex;align-items:center;justify-content:space-b
     </div>
   </div>
 </div>
+
+<!-- Mobile filter toggle -->
+<button class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilters()">
+  ⚙ Filtres <span class="fcount" id="filter-count" style="display:none">0</span>
+</button>
 
 <!-- Lock button -->
 <button class="lock-btn" id="lock-btn" onclick="openTokenModal()" title="Mode admin">🔐</button>
@@ -774,6 +867,7 @@ function update() {
   renderMarkers(data);
   renderCards();
   document.getElementById('total-count').textContent=DATA.length;
+  updateFilterCount();
 }
 
 function resetFilters() {
@@ -784,6 +878,22 @@ function resetFilters() {
   document.querySelectorAll('.arr-btn.active,.tag.active,.price-btn.active').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.feature-toggle input').forEach(el=>el.checked=false);
   update();
+}
+
+// Mobile: open/close the filter panel
+function toggleFilters() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// Mobile: show number of active filters on the button
+function updateFilterCount() {
+  const n = filters.arr.size + filters.cuisine.size + filters.type.size + filters.price.size
+    + Object.values(filters.features).filter(Boolean).length;
+  const badge = document.getElementById('filter-count');
+  if (badge) {
+    badge.style.display = n ? 'inline-block' : 'none';
+    badge.textContent = n;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -879,6 +989,10 @@ document.getElementById('token-input').addEventListener('keydown',e=>{if(e.key==
 // ─────────────────────────────────────────────────────────────────────
 initMap();
 checkStoredToken().then(()=>loadFromGitHub());
+
+// Keep the map correctly sized on orientation change / resize (mobile)
+window.addEventListener('resize', () => { if (mapInstance) mapInstance.invalidateSize(); });
+setTimeout(() => { if (mapInstance) mapInstance.invalidateSize(); }, 400);
 </script>
 </body>
 </html>
