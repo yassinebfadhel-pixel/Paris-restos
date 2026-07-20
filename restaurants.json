@@ -4640,22 +4640,6 @@
     "Gastro": false
   },
   {
-    "Name": "49 Rue Marguerite de Rochechouart, 75009 Paris",
-    "Type": "Bar",
-    "Cuisine Type": "International",
-    "Price": "€€",
-    "Arrondissement": 75011,
-    "Location": "9 Rue Saint-Maur, 75011 Paris",
-    "Comments": "",
-    "Terrasse": false,
-    "Sans reservation": false,
-    "Streetfood": false,
-    "Grande tablées": false,
-    "Rooftop": false,
-    "Festif": true,
-    "Gastro": false
-  },
-  {
     "Name": "French Riviera République",
     "Type": "Bar à vin / Tapas",
     "Cuisine Type": "Français",
