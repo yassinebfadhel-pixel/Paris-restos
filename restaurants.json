@@ -5022,5 +5022,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Fratelli Castellano",
+    "Type": "Restaurant",
+    "Cuisine Type": "Italien",
+    "Price": "€",
+    "Arrondissement": 75015,
+    "Location": "43 Rue Fondary, 75015 Paris",
+    "Comments": "Pïzza",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
