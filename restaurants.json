@@ -4990,5 +4990,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Nouilles Ceintures",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€",
+    "Arrondissement": 75009,
+    "Location": "",
+    "Comments": "17 Rue du Faubourg Montmartre, 75009 Paris",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
