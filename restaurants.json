@@ -4910,5 +4910,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Diamant Rose",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€",
+    "Arrondissement": 75006,
+    "Location": "161 Bd du Montparnasse, 75006 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
