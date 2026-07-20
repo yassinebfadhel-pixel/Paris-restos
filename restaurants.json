@@ -4910,5 +4910,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Sin An Kiang",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "8 Av. de la République, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
