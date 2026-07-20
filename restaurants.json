@@ -4942,5 +4942,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "yoshi sushi",
+    "Type": "Restaurant",
+    "Cuisine Type": "Japonais",
+    "Price": "€",
+    "Arrondissement": 75017,
+    "Location": "103 Rue de Prony, 75017 Paris",
+    "Comments": "Sushi livraison",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": true,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
