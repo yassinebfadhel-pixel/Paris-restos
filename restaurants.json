@@ -5006,5 +5006,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "the indian arms paris",
+    "Type": "Bar à vin / Tapas, Restaurant",
+    "Cuisine Type": "Indien",
+    "Price": "€€",
+    "Arrondissement": 75009,
+    "Location": "9 Rue Paul Lelong, 75002 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
