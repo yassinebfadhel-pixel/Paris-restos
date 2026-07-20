@@ -4926,5 +4926,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Attabler Paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75016,
+    "Location": "148 Rue de la Pompe, 75016 Paris",
+    "Comments": "Bistrot classique",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
