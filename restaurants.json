@@ -4958,5 +4958,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Chez Clo",
+    "Type": "Restaurant",
+    "Cuisine Type": "International",
+    "Price": "€€€",
+    "Arrondissement": 75011,
+    "Location": "62 Rue Jean-Pierre Timbaud, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
