@@ -5054,5 +5054,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Eurpatoria 5",
+    "Type": "Restaurant",
+    "Cuisine Type": "5 Rue d'Eupatoria, 75020 Paris",
+    "Price": "€€",
+    "Arrondissement": 75020,
+    "Location": "5 Rue d'Eupatoria, 75020 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
