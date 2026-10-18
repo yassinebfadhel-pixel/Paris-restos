@@ -5118,5 +5118,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "MUKU – Comptoir Japonais",
+    "Type": "Restaurant",
+    "Cuisine Type": "Japonais",
+    "Price": "€€",
+    "Arrondissement": 75006,
+    "Location": "8 Rue Suger, 75006 Paris",
+    "Comments": "sushi",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
