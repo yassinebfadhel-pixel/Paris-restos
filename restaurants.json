@@ -5150,5 +5150,21 @@
     "Rooftop": false,
     "Festif": true,
     "Gastro": false
+  },
+  {
+    "Name": "Bistrot d'Arsy",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75020,
+    "Location": "15 Rue des Panoyaux, 75020 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
