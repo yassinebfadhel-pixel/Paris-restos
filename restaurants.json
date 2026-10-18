@@ -5070,5 +5070,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Capsule restaurant",
+    "Type": "Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75014,
+    "Location": "2 Rue Cassini, 75014 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
