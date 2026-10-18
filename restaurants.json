@@ -5102,5 +5102,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Bilili Paris",
+    "Type": "Bar à vin / Tapas, Restaurant",
+    "Cuisine Type": "Français",
+    "Price": "€€",
+    "Arrondissement": 75010,
+    "Location": "136 Rue du Faubourg Poissonnière, 75010 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
