@@ -5086,5 +5086,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Selma Paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "Turque",
+    "Price": "€€",
+    "Arrondissement": 75011,
+    "Location": "128 Rue du Chemin Vert, 75011 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
