@@ -5038,5 +5038,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Mr Chow",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€€",
+    "Arrondissement": 75009,
+    "Location": "12 Rue Delambre, 75014 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": true,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
