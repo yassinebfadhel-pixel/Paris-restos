@@ -5134,5 +5134,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Monica Saint Germain",
+    "Type": "Bar",
+    "Cuisine Type": "International",
+    "Price": "€€",
+    "Arrondissement": 75006,
+    "Location": "1 Rue Gozlin, 75006 Paris",
+    "Comments": "Salle en bas mode speakeasy",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": true,
+    "Gastro": false
   }
 ]
