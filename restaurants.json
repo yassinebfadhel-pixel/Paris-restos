@@ -5198,5 +5198,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Fat Belly",
+    "Type": "Restaurant",
+    "Cuisine Type": "Chinois",
+    "Price": "€€",
+    "Arrondissement": 75009,
+    "Location": "57 Rue Charlot, 75003 Paris",
+    "Comments": "",
+    "Terrasse": false,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
