@@ -5182,5 +5182,21 @@
     "Rooftop": false,
     "Festif": false,
     "Gastro": false
+  },
+  {
+    "Name": "Rang Paris",
+    "Type": "Restaurant",
+    "Cuisine Type": "Indien",
+    "Price": "€",
+    "Arrondissement": 75011,
+    "Location": "50 Rue de la Fontaine au Roi, 75011 Paris",
+    "Comments": "",
+    "Terrasse": true,
+    "Sans reservation": false,
+    "Streetfood": false,
+    "Grande tablées": false,
+    "Rooftop": false,
+    "Festif": false,
+    "Gastro": false
   }
 ]
